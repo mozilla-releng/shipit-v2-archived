@@ -5,4 +5,5 @@ export const AUTH_CONFIG = {
   scope: 'full-user-credentials openid profile email',
 };
 export const TREEHERDER_URL = 'https://treeherder.mozilla.org';
+export const TASKCLUSTER_TOOLS_URL = 'https://tools.taskcluster.net';
 export const { API_URL } = process.env;

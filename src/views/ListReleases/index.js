@@ -2,7 +2,7 @@ import React from 'react';
 import { ProgressBar, Button, Modal } from 'react-bootstrap';
 import { object } from 'prop-types';
 import ReactInterval from 'react-interval';
-import { TREEHERDER_URL, API_URL } from '../../config';
+import { TREEHERDER_URL, TASKCLUSTER_TOOLS_URL, API_URL } from '../../config';
 
 const statusStyles = {
   true: 'success',
@@ -92,7 +92,7 @@ const TaskProgress = (props) => {
   const width = 100 / phases.length;
   return (
     <ProgressBar style={{ height: '40px', padding: '3px' }}>
-      {phases.map(({ name, submitted }) => (
+      {phases.map(({ name, submitted, actionTaskId }) => (
         <ProgressBar
           key={name}
           bsStyle={statusStyles[submitted]}
@@ -101,6 +101,7 @@ const TaskProgress = (props) => {
           label={<TaskLabel
             name={name}
             submitted={submitted}
+            taskGroupUrl={`${TASKCLUSTER_TOOLS_URL}/groups/${actionTaskId}`}
             url={`${API_URL}/releases/${releaseName}/${name}`}
           />}
         />
@@ -199,6 +200,6 @@ class TaskLabel extends React.PureComponent {
         </div>
       );
     }
-    return <div>{this.props.name}</div>;
+    return <div>{this.props.name} - <a href={this.props.taskGroupUrl}>Task Group</a></div>;
   }
 }
