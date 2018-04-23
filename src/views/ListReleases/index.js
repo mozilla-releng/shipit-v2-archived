@@ -134,9 +134,6 @@ class Release extends React.Component {
           <p>
             The release will be aborted!
           </p>
-          <small>
-            TC cancel is not implemented. The release will be just marked as abandoned in the API.
-          </small>
         </div>
       );
     }
