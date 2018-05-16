@@ -128,7 +128,7 @@ export default class NewRelease extends React.Component {
 
   handlePartialsChange = async (event) => {
     this.setState({
-      partialVersions: event.target.value.split(',').map(String.trim),
+      partialVersions: event.target.value.split(',').map(v => v.trim()),
     });
   };
 
