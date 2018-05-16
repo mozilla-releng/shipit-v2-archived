@@ -1,5 +1,5 @@
 const envs = {
-  CONFIG: 'dev',
+  CONFIG: 'staging',
 };
 
 // Set environment variables to their default values if not defined
