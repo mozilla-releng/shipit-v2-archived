@@ -1,7 +1,5 @@
 const envs = {
-  API_URL: 'https://shipit-workflow.staging.mozilla-releng.net',
-  AUTH0_DOMAIN: 'auth.mozilla.auth0.com',
-  AUTH0_CLIENT_ID: 'FK1mJkHhwjulTYBGklxn8W4Fhd1pgT4t',
+  CONFIG: 'dev',
 };
 
 // Set environment variables to their default values if not defined
@@ -16,6 +14,7 @@ module.exports = {
             'react/jsx-filename-extension': [1, { 'extensions': ['.js'] }],
             'react/prop-types': 'off',
             'react/no-multi-comp': 'off',
+            'no-console': 'off',
           }
         }
       }
@@ -37,7 +36,13 @@ module.exports = {
             }
           ]
         },
-        devServer: { port: 8010, https: true },
+        devServer: {
+          port: 8010,
+          https: true,
+          headers: {
+            'Access-Control-Allow-Origin': '*',
+          },
+        },
       }
     ],
     ['@neutrinojs/env', Object.keys(envs)],

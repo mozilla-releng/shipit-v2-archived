@@ -8,6 +8,7 @@ import iconUrl from './shipit.png';
 import PropsRoute from '../components/PropsRoute';
 import AuthController from '../components/auth/AuthController';
 import Navigation from '../views/Navigation';
+import NewRelease from '../views/NewRelease';
 import ListReleases from '../views/ListReleases';
 import NotFound from '../components/NotFound';
 import Auth0Login from '../views/Auth0Login';
@@ -88,6 +89,7 @@ export default class App extends React.Component {
                   component={Auth0Login}
                   setUserSession={authController.setUserSession}
                 />
+                <PropsRoute path="/new" component={NewRelease} />
                 <Route component={NotFound} />
               </Switch>
             ) : (

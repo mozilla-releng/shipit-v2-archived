@@ -2,7 +2,7 @@ import React from 'react';
 import { ProgressBar, Button, Modal } from 'react-bootstrap';
 import { object } from 'prop-types';
 import ReactInterval from 'react-interval';
-import { TREEHERDER_URL, TASKCLUSTER_TOOLS_URL, API_URL } from '../../config';
+import config from '../../config';
 
 const statusStyles = {
   true: 'success',
@@ -25,7 +25,7 @@ export default class ListReleases extends React.Component {
 
   getReleases = async () => {
     try {
-      const req = await fetch(`${API_URL}/releases`);
+      const req = await fetch(`${config.API_URL}/releases`);
       const releases = await req.json();
       let message = '';
       if (releases.length === 0) {
@@ -96,8 +96,7 @@ class Release extends React.Component {
   };
 
   abortRelease = async (release) => {
-    // TODO: refactor functions using the API
-    const url = `${API_URL}/releases/${release.name}`;
+    const url = `${config.API_URL}/releases/${release.name}`;
     if (!this.context.authController.userSession) {
       this.setState({ errorMsg: 'Login required!' });
       return;
@@ -132,7 +131,7 @@ class Release extends React.Component {
         <div>
           <h4>Are you sure?</h4>
           <p>
-            The release will be aborted!
+            The release will be cancelled!
           </p>
         </div>
       );
@@ -148,21 +147,23 @@ class Release extends React.Component {
       <div className="row">
         <div className="col">
           <h3>
-            <a href={`${TREEHERDER_URL}/#/jobs?repo=${release.project}&revision=${release.revision}`}>
+            <a href={`${config.TREEHERDER_URL}/#/jobs?repo=${release.project}&revision=${release.revision}`}>
               {release.product} <small>{release.version} build{release.build_number}</small>
             </a>
             <Button
               onClick={this.open}
               bsStyle="danger"
+              bsSize="xsmall"
+              style={{ margin: '10px' }}
               disabled={!this.context.authController.userSession}
             >
-              Abort release
+              Cancel release
             </Button>
           </h3>
         </div>
         <Modal show={this.state.showModal} onHide={this.close}>
           <Modal.Header closeButton>
-            <Modal.Title>Abort a release</Modal.Title>
+            <Modal.Title>Cancel release</Modal.Title>
           </Modal.Header>
           <Modal.Body>
             {this.renderBody()}
@@ -173,7 +174,7 @@ class Release extends React.Component {
               bsStyle="danger"
               disabled={!this.context.authController.userSession}
             >
-              Kill eet!
+              Stop release
             </Button>
             <Button onClick={this.close} bsStyle="primary">Close</Button>
           </Modal.Footer>
@@ -200,8 +201,8 @@ const TaskProgress = (props) => {
           label={<TaskLabel
             name={name}
             submitted={submitted}
-            taskGroupUrl={`${TASKCLUSTER_TOOLS_URL}/groups/${actionTaskId}`}
-            url={`${API_URL}/releases/${releaseName}/${name}`}
+            taskGroupUrl={`${config.TASKCLUSTER_TOOLS_URL}/groups/${actionTaskId}`}
+            url={`${config.API_URL}/releases/${releaseName}/${name}`}
           />}
         />
       ))}
@@ -254,7 +255,6 @@ class TaskLabel extends React.PureComponent {
     }
   };
 
-  // TODO: convert into a function
   renderBody = () => {
     const { submitted, errorMsg } = this.state;
     if (errorMsg) {
