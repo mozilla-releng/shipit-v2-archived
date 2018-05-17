@@ -66,7 +66,7 @@ export default class NewRelease extends React.Component {
     });
     const pushes = await getPushes(branch.repo);
     const suggestedRevisions = Object.values(pushes.pushes).map(push =>
-      push.changesets[0]).reverse().filter(push =>
+      ({ ...push.changesets[0], date: new Date(push.date * 1000) })).reverse().filter(push =>
       push.desc.indexOf('DONTBUILD') === -1);
     this.setState({ suggestedRevisions });
   };
@@ -300,8 +300,15 @@ export default class NewRelease extends React.Component {
                     <MenuItem
                       onClick={() => this.handleSuggestedRev(rev)}
                       key={rev.node}
+                      title={
+                        `${rev.date.toString()} - ${rev.node} - ${rev.desc}`
+                      }
                     >
-                      {rev.node.substring(0, 8)} - {maybeShorten(rev.desc)}
+                      {rev.date.toDateString()}
+                      {' '} - {' '}
+                      {rev.node.substring(0, 8)}
+                      {' '} - {' '}
+                      {maybeShorten(rev.desc)}
                     </MenuItem>
                   ))}
                 </DropdownButton>
