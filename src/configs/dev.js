@@ -12,6 +12,7 @@ module.exports = {
     {
       product: 'firefox',
       prettyName: 'Firefox Desktop',
+      appName: 'browser',
       branches: [
         {
           prettyName: 'Maple Beta',
@@ -26,6 +27,8 @@ module.exports = {
     {
       product: 'fennec',
       prettyName: 'Firefox Moblie',
+      // TODO: The actual appName is `mobile/android` but it gets the version from `browser`.
+      appName: 'browser',
       branches: [
         {
           prettyName: 'Maple Beta',
@@ -40,6 +43,7 @@ module.exports = {
     {
       product: 'devedition',
       prettyName: 'Firefox Developer Edition',
+      appName: 'browser',
       branches: [
         {
           prettyName: 'Maple Beta',
@@ -49,6 +53,22 @@ module.exports = {
         },
       ],
       enablePartials: true,
+      channel: 'beta',
+    },
+    {
+      product: 'thunderbird',
+      prettyName: 'Thunderbird',
+      appName: 'mail',
+      branches: [
+        {
+          prettyName: 'Try',
+          project: 'try-comm-central',
+          branch: 'try-comm-central',
+          repo: 'https://hg.mozilla.org/try-comm-central',
+        },
+      ],
+      // TODO
+      enablePartials: false,
       channel: 'beta',
     },
   ],
