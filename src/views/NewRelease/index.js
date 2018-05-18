@@ -87,8 +87,9 @@ export default class NewRelease extends React.Component {
     const { product } = this.state.selectedProduct;
     const { branch } = this.state.selectedBranch;
     const shippedReleases = await getShippedReleases(product, branch);
+    const shippedBuilds = shippedReleases.map(r => `${r.version}build${r.build_number}`);
     // take first N releases
-    const suggestedBuilds = shippedReleases.slice(0, 3);
+    const suggestedBuilds = shippedBuilds.slice(0, 3);
 
     this.setState({
       partialVersions: suggestedBuilds,
@@ -134,9 +135,11 @@ export default class NewRelease extends React.Component {
 
   submitRelease = async () => {
     this.setState({ inProgress: true });
+    const { product } = this.state.selectedProduct;
+    const { branch } = this.state.selectedBranch;
     const releaseObj = {
-      product: this.state.selectedProduct.product,
-      branch: this.state.selectedBranch.branch,
+      product,
+      branch,
       revision: this.state.revision,
       version: this.state.version,
       build_number: this.state.buildNumber,
@@ -145,12 +148,10 @@ export default class NewRelease extends React.Component {
 
     if (this.state.selectedProduct.enablePartials) {
       const partialUpdates = await Promise.all(this.state.partialVersions.map(async (ver) => {
-        // TODO: better way to define partials
         const [version, buildNumber] = ver.split('build');
-        const underscoreVersion = version.replace('.', '_');
-        const productUppercase = this.state.selectedProduct.product.toUpperCase();
-        const tag = `${productUppercase}_${underscoreVersion}_RELEASE`;
-        const locales = await getLocales(this.state.selectedBranch.repo, tag);
+        const shippedReleases = await getShippedReleases(product, branch, version, buildNumber);
+        const { revision } = shippedReleases[0];
+        const locales = await getLocales(this.state.selectedBranch.repo, revision);
         return [
           version, { buildNumber, locales },
         ];

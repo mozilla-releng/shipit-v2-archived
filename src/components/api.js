@@ -26,7 +26,7 @@ export async function getBuildNumbers(product, branch, version) {
  * This will fetch only shipped releases for a specific branch-product
  * combination. Optionally the version can be specified.
  */
-export async function getShippedReleases(product, branch, version = null) {
+export async function getShippedReleases(product, branch, version = null, buildNumber = null) {
   const url = new URL(`${config.API_URL}/releases`);
   const params = new URLSearchParams({
     product,
@@ -36,8 +36,11 @@ export async function getShippedReleases(product, branch, version = null) {
   if (version !== null) {
     params.version = version;
   }
+  if (buildNumber !== null) {
+    params.build_number = buildNumber;
+  }
   url.search = params;
   const res = await fetch(url);
   const data = await res.json();
-  return data.reverse().map(r => `${r.version}build${r.build_number}`);
+  return data.reverse();
 }
