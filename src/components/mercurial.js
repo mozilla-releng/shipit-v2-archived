@@ -10,7 +10,7 @@ export async function getPushes(repo) {
 /**
  * Get in-tree product "display" version.
  */
-export async function getVersion(repo, revision, appName = 'browser') {
+export async function getVersion(repo, revision, appName) {
   const url = `${repo}/raw-file/${revision}/${appName}/config/version_display.txt`;
   const res = await fetch(url);
   if (res.ok) {
@@ -23,7 +23,7 @@ export async function getVersion(repo, revision, appName = 'browser') {
 /**
  * Get in-tree "shipped" locales.
  */
-export async function getLocales(repo, revision, appName = 'browser') {
+export async function getLocales(repo, revision, appName) {
   const url = `${repo}/raw-file/${revision}/${appName}/locales/l10n-changesets.json`;
   const res = await fetch(url);
   const locales = await res.json();

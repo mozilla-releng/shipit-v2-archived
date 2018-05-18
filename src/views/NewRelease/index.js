@@ -100,7 +100,10 @@ export default class NewRelease extends React.Component {
     this.setState({
       revision: rev.node,
     });
-    this.version = await getVersion(this.state.selectedBranch.repo, rev.node);
+    this.version = await getVersion(
+      this.state.selectedBranch.repo, rev.node,
+      this.state.selectedProduct.appName,
+    );
     await this.guessBuildId();
     if (this.state.selectedProduct.enablePartials) {
       await this.guessPartialVersions();
@@ -158,7 +161,10 @@ export default class NewRelease extends React.Component {
           return null;
         }
         const { revision } = shippedReleases[0];
-        const locales = await getLocales(this.state.selectedBranch.repo, revision);
+        const locales = await getLocales(
+          this.state.selectedBranch.repo, revision,
+          this.state.selectedProduct.appName,
+        );
         return [
           version, { buildNumber, locales },
         ];
