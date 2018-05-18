@@ -55,6 +55,22 @@ module.exports = {
       enablePartials: true,
       channel: 'beta',
     },
+    {
+      product: 'thunderbird',
+      prettyName: 'Thunderbird',
+      appName: 'mail',
+      branches: [
+        {
+          prettyName: 'Try',
+          project: 'try-comm-central',
+          branch: 'try-comm-central',
+          repo: 'https://hg.mozilla.org/try-comm-central',
+        },
+      ],
+      // TODO
+      enablePartials: false,
+      channel: 'beta',
+    },
   ],
 };
 
