@@ -34,10 +34,10 @@ export async function getShippedReleases(product, branch, version = null, buildN
     status: 'shipped',
   });
   if (version !== null) {
-    params.version = version;
+    params.set('version', version);
   }
   if (buildNumber !== null) {
-    params.build_number = buildNumber;
+    params.set('build_number', buildNumber);
   }
   url.search = params;
   const res = await fetch(url);
