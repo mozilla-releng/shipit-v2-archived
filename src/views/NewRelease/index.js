@@ -150,6 +150,13 @@ export default class NewRelease extends React.Component {
       const partialUpdates = await Promise.all(this.state.partialVersions.map(async (ver) => {
         const [version, buildNumber] = ver.split('build');
         const shippedReleases = await getShippedReleases(product, branch, version, buildNumber);
+        if (shippedReleases.length !== 1) {
+          this.setState({
+            inProgress: false,
+            errorMsg: `More than one release entries for ${product} ${branch} ${version} build ${buildNumber}`,
+          });
+          return null;
+        }
         const { revision } = shippedReleases[0];
         const locales = await getLocales(this.state.selectedBranch.repo, revision);
         return [
