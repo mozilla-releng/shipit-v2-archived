@@ -1,5 +1,5 @@
 import React from 'react';
-import { ProgressBar, Button, Modal } from 'react-bootstrap';
+import { ProgressBar, Button, Modal, Collapse } from 'react-bootstrap';
 import { object } from 'prop-types';
 import ReactInterval from 'react-interval';
 import { Queue } from 'taskcluster-client-web';
@@ -362,8 +362,18 @@ class TaskLabel extends React.PureComponent {
               {this.renderBody()}
             </Modal.Body>
             <Modal.Footer>
-              <Button onClick={this.doEet} bsStyle="danger" disabled={!this.context.authController.userSession}>Do eet!</Button>
-              <Button onClick={this.close} bsStyle="primary">Close</Button>
+              <Collapse in={!this.state.submitted}>
+                <div>
+                  <Button
+                    onClick={this.doEet}
+                    bsStyle="danger"
+                    disabled={!this.context.authController.userSession && !this.state.submitted}
+                  >
+                    Do eet!
+                  </Button>
+                  <Button onClick={this.close} bsStyle="primary">Close</Button>
+                </div>
+              </Collapse>
             </Modal.Footer>
           </Modal>
         </div>
