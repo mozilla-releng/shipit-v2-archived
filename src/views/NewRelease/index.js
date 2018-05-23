@@ -222,14 +222,13 @@ export default class NewRelease extends React.Component {
     }
     if (!submitted) {
       const url = `${config.TREEHERDER_URL}/#/jobs?repo=${this.state.selectedBranch.project}&revision=${this.state.revision}`;
+      const buildName =
+        `${this.state.selectedProduct.product}-${this.state.version}-build${this.state.buildNumber}`;
       return (
         <div>
           <h4>The following release will be submitted:</h4>
           <div>
-            <a href={url}>
-              {this.state.selectedProduct.product}-{this.state.version}-
-              build{this.state.buildNumber}
-            </a>
+            <a href={url}>{buildName}</a>
           </div>
         </div>
       );
