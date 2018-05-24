@@ -1,12 +1,26 @@
 import React from 'react';
-import { ProgressBar, Button, Modal } from 'react-bootstrap';
+import { ProgressBar, Button, Modal, Collapse } from 'react-bootstrap';
 import { object } from 'prop-types';
 import ReactInterval from 'react-interval';
+import { Queue } from 'taskcluster-client-web';
 import config from '../../config';
 
 const statusStyles = {
-  true: 'success',
-  false: 'info',
+  // TC statuses
+  unscheduled: 'info',
+  pending: 'info',
+  running: 'info',
+  completed: 'success',
+  failed: 'danger',
+  exception: 'warning',
+  // Additional statuses
+  ready: 'info',
+  blocked: 'info',
+};
+
+const taskStatus = async (taskId) => {
+  const status = await (new Queue()).status(taskId);
+  return status;
 };
 
 export default class ListReleases extends React.Component {
@@ -187,28 +201,76 @@ class Release extends React.Component {
   }
 }
 
-const TaskProgress = (props) => {
-  const { phases, releaseName } = props;
-  const width = 100 / phases.length;
-  return (
-    <ProgressBar style={{ height: '40px', padding: '3px' }}>
-      {phases.map(({ name, submitted, actionTaskId }) => (
-        <ProgressBar
-          key={name}
-          bsStyle={statusStyles[submitted]}
-          now={width}
-          active={submitted}
-          label={<TaskLabel
-            name={name}
-            submitted={submitted}
-            taskGroupUrl={`${config.TASKCLUSTER_TOOLS_URL}/groups/${actionTaskId}`}
-            url={`${config.API_URL}/releases/${releaseName}/${name}`}
-          />}
-        />
-      ))}
-    </ProgressBar>
-  );
+const phaseStatus = async (phase, previousPhase) => {
+  // Use TC status if task is submitted
+  if (phase.submitted) {
+    const status = await taskStatus(phase.actionTaskId);
+    return status.status.state;
+  }
+  // FIrst phase, ready any time
+  if (!previousPhase) {
+    return 'ready';
+  }
+  // Phase is ready only when the previous one is submitted and the task is completed
+  if (previousPhase.submitted) {
+    // TODO: cache previous phase status
+    const status = await taskStatus(previousPhase.actionTaskId);
+    if (status.status.state === 'completed') {
+      return 'ready';
+    }
+  }
+  return 'blocked';
 };
+
+class TaskProgress extends React.Component {
+  constructor(...args) {
+    super(...args);
+    this.state = {
+      phasesWithStatus: [],
+    };
+  }
+
+  async componentDidMount() {
+    await this.syncPhases();
+  }
+
+  syncPhases = async () => {
+    const { phases } = this.props;
+    const phasesWithStatus = await Promise.all(phases.map(async (phase, idx, arr) => {
+      const status = await phaseStatus(phase, arr[idx - 1]);
+      return { ...phase, status };
+    }));
+    this.setState({ phasesWithStatus });
+  };
+
+  render() {
+    const { phasesWithStatus } = this.state;
+    const { releaseName } = this.props;
+    const width = 100 / phasesWithStatus.length;
+    return (
+      <ProgressBar style={{ height: '40px', padding: '3px' }}>
+        {phasesWithStatus.map(({
+          name, submitted, actionTaskId, status,
+        }) => (
+          <ProgressBar
+            key={name}
+            bsStyle={statusStyles[status] || 'info'}
+            now={width}
+            active={submitted && status === 'running'}
+            label={<TaskLabel
+              key={actionTaskId}
+              name={name}
+              submitted={submitted}
+              status={status}
+              taskGroupUrl={`${config.TASKCLUSTER_TOOLS_URL}/groups/${actionTaskId}`}
+              url={`${config.API_URL}/releases/${releaseName}/${name}`}
+            />}
+          />
+        ))}
+      </ProgressBar>
+    );
+  }
+}
 
 class TaskLabel extends React.PureComponent {
   static contextTypes = {
@@ -280,10 +342,18 @@ class TaskLabel extends React.PureComponent {
   };
 
   render() {
-    if (!this.state.submitted) {
+    const { status, name, taskGroupUrl } = this.props;
+    if (status === 'blocked') {
       return (
         <div>
-          <Button bsStyle="primary" onClick={this.open}>{this.props.name}</Button>
+          <Button disabled bsStyle={statusStyles[status]}>{name}</Button>
+        </div>
+      );
+    }
+    if (status === 'ready') {
+      return (
+        <div>
+          <Button bsStyle="primary" onClick={this.open}>{name}</Button>
           <Modal show={this.state.showModal} onHide={this.close}>
             <Modal.Header closeButton>
               <Modal.Title>Do eet</Modal.Title>
@@ -292,13 +362,27 @@ class TaskLabel extends React.PureComponent {
               {this.renderBody()}
             </Modal.Body>
             <Modal.Footer>
-              <Button onClick={this.doEet} bsStyle="danger" disabled={!this.context.authController.userSession}>Do eet!</Button>
-              <Button onClick={this.close} bsStyle="primary">Close</Button>
+              <Collapse in={!this.state.submitted}>
+                <div>
+                  <Button
+                    onClick={this.doEet}
+                    bsStyle="danger"
+                    disabled={!this.context.authController.userSession && !this.state.submitted}
+                  >
+                    Do eet!
+                  </Button>
+                  <Button onClick={this.close} bsStyle="primary">Close</Button>
+                </div>
+              </Collapse>
             </Modal.Footer>
           </Modal>
         </div>
       );
     }
-    return <div>{this.props.name} - <a href={this.props.taskGroupUrl}>Task Group</a></div>;
+    return (
+      <div>
+        <Button bsStyle={statusStyles[status]} href={taskGroupUrl}>{name}</Button>
+      </div>
+    );
   }
 }
