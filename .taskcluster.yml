@@ -18,10 +18,16 @@ tasks:
         - /bin/bash
         - '--login'
         - '-c'
-        - >-
-          git clone {{event.head.repo.url}} repo && cd repo && git config
-          advice.detachedHead false && git checkout {{event.head.sha}} &&
-          yarn && yarn lint && yarn test && yarn build
+        - |
+          set -e
+          git clone {{event.head.repo.url}} repo
+          cd repo
+          git config advice.detachedHead false
+          git checkout {{event.head.sha}}
+          yarn
+          yarn lint
+          yarn test
+          yarn build
     metadata:
       name: 'UI CI tests'
       description: 'Run linting, tests, etc'
