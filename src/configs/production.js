@@ -37,7 +37,7 @@ module.exports = {
     },
     {
       product: 'fennec',
-      prettyName: 'Firefox Moblie',
+      prettyName: 'Firefox Mobile',
       // TODO: The actual appName is `mobile/android` but it gets the version from `browser`.
       appName: 'browser',
       branches: [
