@@ -6,7 +6,10 @@ FROM node:9.11.2-slim
 RUN groupadd -g 10001 app && \
     useradd -m -g app -d /app -u 10001 app
 
-RUN apt-get update -q && apt-get install -yq libpng-dev
+RUN apt-get update -q \
+    && apt-get install -yq libpng-dev \
+    && apt-get clean
+
 WORKDIR /app
 
 USER app
