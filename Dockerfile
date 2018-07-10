@@ -1,5 +1,6 @@
 # Based on https://github.com/mozilla-services/Dockerflow/blob/master/Dockerfile
 FROM node:9.11.2-slim
+ENV DEBIAN_FRONTEND=noninteractive
 
 # add a non-privileged user for installing and running
 # the application
