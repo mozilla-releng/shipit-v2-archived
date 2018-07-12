@@ -13,7 +13,12 @@ tasks:
           - release
     payload:
       maxRunTime: 3600
-      image: node
+      artifacts:
+        public/build:
+          path: /repo/artifacts
+          type: directory
+          expires: "{{ '14 days' | $fromNow }}"
+      image: node:9.11.2
       command:
         - /bin/bash
         - '--login'
@@ -28,6 +33,8 @@ tasks:
           yarn lint
           yarn test
           yarn build
+          mkdir artifacts
+          tar -czf artifacts/build.tar.gz build
     metadata:
       name: 'UI CI tests'
       description: 'Run linting, tests, etc'
