@@ -23,7 +23,7 @@ if [ ${#tags[@]} -eq 0 ]; then
 fi
 
 commit=$(git rev-parse HEAD)
-version=$(grep '"version": ' package.json | awk -F'"' '{print $4}')
+version=$(cat package.json| python -c 'import json, sys; a = json.load(sys.stdin); print a["version"];')
 
 cat > version.json <<EOF
 {
