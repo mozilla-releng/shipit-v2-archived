@@ -37,10 +37,14 @@ module.exports = {
           ]
         },
         devServer: {
-          port: 8010,
-          https: true,
-          headers: {
-            'Access-Control-Allow-Origin': '*',
+          port: process.env.PORT || 8010,
+          https: !Boolean(process.env.HTTPS_DISABLED),
+          historyApiFallback: {
+            rewrites: [
+              { from: '__heartbeat__', to: 'views/ok.html' },
+              { from: '__lbheartbeat__', to: 'views/ok.html' },
+              { from: '__version__', to: 'views/version.json' },
+            ],
           },
         },
       }
