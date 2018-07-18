@@ -47,7 +47,7 @@ rec {
       nginxConfTemplate = pkgs.writeText "nginx.conf.template" ''
         user app app;
         daemon off;
-        error_log /dev/stdout debug;
+        error_log /dev/stdout info;
         pid /dev/null;
         events {}
         http {
@@ -79,7 +79,7 @@ rec {
 
       # Dockerflow passes the desired port as PORT environment variable
       nginxStartScript = pkgs.writeScript "startnginx" ''
-        #!/bin/sh
+        #!${pkgs.stdenv.shell}
         if [ -z $PORT ]; then PORT=${nginxFallbackPort}; fi
         sed -e s/@PORT@/$PORT/g ${nginxConfTemplate} > /etc/nginx.conf
         exec nginx -c /etc/nginx.conf
