@@ -39,6 +39,7 @@ module.exports = {
         devServer: {
           port: process.env.PORT || 8010,
           https: !Boolean(process.env.HTTPS_DISABLED),
+          disableHostCheck: true,
           historyApiFallback: {
             rewrites: [
               { from: '__heartbeat__', to: 'views/ok.html' },
