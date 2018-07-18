@@ -5,6 +5,7 @@ tasks:
     workerType: '{{ taskcluster.docker.workerType }}'
     extra:
       github:
+        env: true
         events:
           - pull_request.closed
           - pull_request.opened
@@ -42,32 +43,46 @@ tasks:
       owner: '{{ event.head.user.email }}'
       source: '{{ event.head.repo.url }}'
 
-  - provisionerId: "{{ taskcluster.docker.provisionerId }}"
-    workerType: "{{ taskcluster.docker.workerType }}"
-    scopes:
-      - secrets:get:repo:github.com/mozilla-releng/shipit-v2:dockerhub
+  - provisionerId: '{{ taskcluster.docker.provisionerId }}'
+    workerType: '{{ taskcluster.docker.workerType }}'
+    extra:
+      github:
+        env: true
+        events:
+          - pull_request.opened
+          - pull_request.reopened
+          - pull_request.synchronize
     payload:
+      maxRunTime: 3600
       artifacts:
         public/build:
-          path: /home/worker/artifacts
+          path: /repo/artifacts
           type: directory
           expires: "{{ '14 days' | $fromNow }}"
-      maxRunTime: 3600
-      image: "taskcluster/image_builder:0.1.3"
-      features:
-        dind: true
-        taskclusterProxy: true
+      image: "nixos/nix:2.0.4"
       command:
-        - /bin/bash
+        - /bin/sh
         - '--login'
         - '-c'
         - |
           set -e
-          git clone {{event.head.repo.url}} repo
+          nix-shell -p git --run "git clone {{event.head.repo.url}} repo"
           cd repo
-          git config advice.detachedHead false
-          git checkout {{event.head.sha}}
-          ./scripts/push-dockerimage.sh latest {{ event.head.repo.branch }}-{{event.head.sha}}
+          nix-shell -p git --run "git config advice.detachedHead false"
+          nix-shell -p git --run "git checkout {{event.head.sha}}"
+          nix-build -A docker
+          mkdir artifacts
+          cp $(readlink result) artifacts/image.tar.gz
+    metadata:
+      name: 'Generate docker image tarball'
+      description: 'Generate docker image tarball'
+      owner: '{{ event.head.user.email }}'
+      source: '{{ event.head.repo.url }}'
+
+  - provisionerId: '{{ taskcluster.docker.provisionerId }}'
+    workerType: '{{ taskcluster.docker.workerType }}'
+    scopes:
+      - secrets:get:repo:github.com/mozilla-releng/shipit-v2:dockerhub
     extra:
       github:
         env: true
@@ -75,43 +90,73 @@ tasks:
           - push
         branches:
           - master
-    metadata:
-      name: 'Generate docker image'
-      description: 'Generate docker image'
-      owner: '{{ event.head.user.email }}'
-      source: '{{ event.head.repo.url }}'
-
-  - provisionerId: "{{ taskcluster.docker.provisionerId }}"
-    workerType: "{{ taskcluster.docker.workerType }}"
-    scopes:
-      - secrets:get:repo:github.com/mozilla-releng/shipit-v2:dockerhub
     payload:
+      maxRunTime: 3600
+      features:
+        taskclusterProxy: true
       artifacts:
         public/build:
-          path: /home/worker/artifacts
+          path: /repo/artifacts
           type: directory
           expires: "{{ '14 days' | $fromNow }}"
-      maxRunTime: 3600
-      image: "taskcluster/image_builder:0.1.3"
-      features:
-        dind: true
-        taskclusterProxy: true
+      image: "nixos/nix:2.0.4"
       command:
-        - /bin/bash
+        - /bin/sh
         - '--login'
         - '-c'
         - |
           set -e
-          git clone -b {{ event.version }} {{ event.head.repo.url }} repo
+          nix-shell -p git --run "git clone {{event.head.repo.url}} repo"
           cd repo
-          ./scripts/push-dockerimage.sh {{ event.version }}
+          nix-shell -p git --run "git config advice.detachedHead false"
+          nix-shell -p git --run "git checkout {{event.head.sha}}"
+          nix-build -A docker --argstr githubCommit {{event.head.sha}} --argstr buildUrl https://tools.taskcluster.net/tasks/$TASK_ID --argstr dockerTag {{ event.head.repo.branch }}
+          mkdir artifacts
+          cp $(readlink result) artifacts/image.tar.gz
+          echo "hosts: files mdns4_minimal [NOTFOUND=return] dns mdns4" > /etc/nsswitch.conf
+          ./scripts/push-dockerimage.py latest {{ event.head.repo.branch }}-{{ event.head.sha }}
+    metadata:
+      name: 'Generate and publish docker image'
+      description: 'Generate and publish docker image'
+      owner: '{{ event.head.user.email }}'
+      source: '{{ event.head.repo.url }}'
+
+  - provisionerId: '{{ taskcluster.docker.provisionerId }}'
+    workerType: '{{ taskcluster.docker.workerType }}'
+    scopes:
+      - secrets:get:repo:github.com/mozilla-releng/shipit-v2:dockerhub
     extra:
       github:
         env: true
         events:
           - release
+    payload:
+      maxRunTime: 3600
+      features:
+        taskclusterProxy: true
+      artifacts:
+        public/build:
+          path: /repo/artifacts
+          type: directory
+          expires: "{{ '14 days' | $fromNow }}"
+      image: "nixos/nix:2.0.4"
+      command:
+        - /bin/sh
+        - '--login'
+        - '-c'
+        - |
+          set -e
+          nix-shell -p git --run "git clone {{event.head.repo.url}} repo"
+          cd repo
+          nix-shell -p git --run "git config advice.detachedHead false"
+          nix-shell -p git --run "git checkout {{event.head.sha}}"
+          nix-build -A docker --argstr githubCommit {{event.head.sha}} --argstr buildUrl https://tools.taskcluster.net/tasks/$TASK_ID --argstr dockerTag {{ event.head.repo.branch }}
+          mkdir artifacts
+          cp $(readlink result) artifacts/image.tar.gz
+          echo "hosts: files mdns4_minimal [NOTFOUND=return] dns mdns4" > /etc/nsswitch.conf
+          ./scripts/push-dockerimage.py {{ event.version }}
     metadata:
-      name: 'Generate docker image'
-      description: 'Generate docker image'
+      name: 'Generate and publish docker image'
+      description: 'Generate and publish docker image'
       owner: '{{ event.head.user.email }}'
       source: '{{ event.head.repo.url }}'
