@@ -1,0 +1,30 @@
+user app app;
+daemon off;
+error_log /dev/stdout info;
+pid /dev/null;
+events {}
+http {
+  include /etc/nginx/mime.types;
+  access_log /dev/stdout;
+  server {
+    listen @PORT@;
+    index index.html;
+    root /app/www;
+
+    # Dockerflow endpoints
+    rewrite ^/__version__$ /version.json;
+    location /__heartbeat__ {
+      return 200 OK;
+    }
+    location /__lbheartbeat__ {
+      return 200 OK;
+    }
+    # Dockerflow endpoints end
+
+    # Route all URL via index.html
+    location / {
+      try_files $uri /index.html =404;
+    }
+
+  }
+}
