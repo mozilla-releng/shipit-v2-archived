@@ -34,6 +34,8 @@ cat > version.json <<EOF
 }
 EOF
 cp version.json src/views/version.json
+mkdir -p www
+cp version.json www/version.json
 
 echo "Building Docker image"
 docker build -t buildtemp .
