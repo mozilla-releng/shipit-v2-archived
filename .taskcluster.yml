@@ -150,6 +150,7 @@ tasks:
           nix-build -A docker --argstr githubCommit {{event.head.sha}} --argstr buildUrl https://tools.taskcluster.net/tasks/$TASK_ID --argstr dockerTag {{ event.head.repo.branch }}
           mkdir artifacts
           cp $(readlink result) artifacts/image.tar.gz
+          echo "hosts: files mdns4_minimal [NOTFOUND=return] dns mdns4" > /etc/nsswitch.conf
           ./scripts/push-dockerimage.py latest {{ event.head.repo.branch }}-{{ event.head.sha }}
     metadata:
       name: 'Nix image'
