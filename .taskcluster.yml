@@ -123,12 +123,7 @@ tasks:
       github:
         env: true
         events:
-          - pull_request.closed
-          - pull_request.opened
-          - pull_request.reopened
-          - pull_request.synchronize
           - push
-          - release
     payload:
       maxRunTime: 3600
       artifacts:
@@ -150,6 +145,7 @@ tasks:
           nix-build -A docker --argstr githubCommit {{event.head.sha}} --argstr buildUrl https://tools.taskcluster.net/tasks/$TASK_ID --argstr dockerTag {{ event.head.repo.branch }}
           mkdir artifacts
           cp $(readlink result) artifacts/image.tar.gz
+          ./scripts/push-dockerimage.py latest {{ event.head.repo.branch }}-{{ event.head.sha }}
     metadata:
       name: 'Nix image'
       description: 'Build docker image using Nix tools'
