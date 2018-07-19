@@ -119,6 +119,9 @@ tasks:
 
   - provisionerId: '{{ taskcluster.docker.provisionerId }}'
     workerType: '{{ taskcluster.docker.workerType }}'
+    scopes:
+      # FIXME
+      - secrets:get:repo:github.com/mozilla-releng/shipit-v2:dockerhub-testing
     extra:
       github:
         env: true
@@ -126,6 +129,8 @@ tasks:
           - push
     payload:
       maxRunTime: 3600
+      features:
+        taskclusterProxy: true
       artifacts:
         public/build:
           path: /repo/artifacts
