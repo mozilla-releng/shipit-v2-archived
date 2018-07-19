@@ -19,6 +19,6 @@ COPY . /app
 RUN yarn && \
     yarn build && \
     yarn cache clean && \
-    mv build www
+    cp -r build/. www/
 
 CMD ["startnginx"]
