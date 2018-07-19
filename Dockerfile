@@ -13,7 +13,7 @@ RUN apt-get update -q \
 
 WORKDIR /app
 COPY nginx.conf.template /etc/nginx.conf.template
-COPY scripts/startnginx /bin
+COPY scripts/startnginx /bin/startnginx
 
 COPY . /app
 RUN yarn && \
