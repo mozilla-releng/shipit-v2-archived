@@ -8,16 +8,17 @@ RUN groupadd -g 10001 app && \
     useradd -m -g app -d /app -u 10001 app
 
 RUN apt-get update -q \
-    && apt-get install -yq libpng-dev \
+    && apt-get install -yq libpng-dev nginx \
     && apt-get clean
 
 WORKDIR /app
+COPY nginx.conf.template /etc/nginx.conf.template
+COPY scripts/startnginx /bin/startnginx
 
-USER app
 COPY . /app
 RUN yarn && \
     yarn build && \
-    yarn cache clean
+    yarn cache clean && \
+    cp -r build/. www/
 
-ENTRYPOINT ["yarn"]
-CMD ["start"]
+CMD ["startnginx"]

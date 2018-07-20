@@ -1,0 +1,36 @@
+user app app;
+daemon off;
+error_log /dev/stdout info;
+pid /dev/null;
+events {}
+http {
+  include /etc/nginx/mime.types;
+  access_log /dev/stdout;
+  server {
+    listen @PORT@;
+    index index.html;
+    root /app/www;
+
+    # Dockerflow endpoints
+    rewrite ^/__version__$ /version.json;
+    location /__heartbeat__ {
+      return 200 OK;
+    }
+    location /__lbheartbeat__ {
+      return 200 OK;
+    }
+    # Dockerflow endpoints end
+
+    # Route all URL via index.html
+    location / {
+
+      add_header 'Access-Control-Allow-Origin' '*';
+      add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS';
+      add_header 'Access-Control-Allow-Headers' 'DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range';
+      add_header 'Access-Control-Expose-Headers' 'Content-Length,Content-Range';
+      add_header 'Content-Security-Policy' "default-src 'self' *.mozilla-releng.net *.mozilla.org *.taskcluster.net; report-uri /__cspreport__; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' 'unsafe-eval';";
+
+      try_files $uri /index.html;
+    }
+  }
+}
