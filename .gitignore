@@ -1,6 +1,0 @@
-build
-node_modules
-*.swp
-.idea/
-yarn-error.log
-result
